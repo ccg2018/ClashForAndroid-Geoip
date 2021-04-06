@@ -1,15 +1,17 @@
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.FileNotFoundException
-import java.util.*
+import java.io.FileOutputStream
 import java.net.URL
+import java.util.*
 
 plugins {
     id("com.android.application")
 }
 
 val local = Properties().apply {
-    FileInputStream(rootProject.file("local.properties")).use(this::load)
+    FileInputStream(rootProject.file("local.properties"))
+        .reader(Charsets.UTF_8)
+        .use(this::load)
 }
 
 android {
@@ -21,8 +23,8 @@ android {
         minSdk = 21
         targetSdk = 30
 
-        versionCode = local.requireProperty("project.versionCode").toInt()
-        versionName = local.requireProperty("project.versionName")
+        versionCode = local.requireProperty("project.version_code").toInt()
+        versionName = local.requireProperty("project.version_name")
 
         resValue("string", "package_label", local.requireProperty("project.package_label"))
 
@@ -69,12 +71,7 @@ android {
     }
 }
 
-afterEvaluate {
-    android.applicationVariants.forEach {
-        it.mergeResourcesProvider.get().dependsOn(tasks["fetchIcon"])
-        it.mergeAssetsProvider.get().dependsOn(tasks["fetchMMDB"])
-    }
-}
+
 
 task("fetchMMDB") {
     val url = local.requireProperty("project.geoip_mmdb_url")
@@ -90,19 +87,33 @@ task("fetchMMDB") {
 }
 
 task("fetchIcon") {
-    val url = local.getProperty("project.package_icon_url") ?: return@task
-    val outputDir = buildDir.resolve("icon/mipmap").apply { mkdirs() }
+    val url = local.getProperty("project.package_icon_url")
 
-    require(url.endsWith(".png")) {
-        throw IllegalArgumentException("icon must be .png file")
-    }
+    if (url != null) {
+        val outputDir = buildDir.resolve("icon/mipmap").apply { mkdirs() }
 
-    doLast {
-        URL(url).openStream().use { input ->
-            FileOutputStream(outputDir.resolve("ic_icon.png")).use { output ->
-                input.copyTo(output)
+        require(url.endsWith(".png")) {
+            throw IllegalArgumentException("icon must be .png file")
+        }
+
+        doLast {
+            URL(url).openStream().use { input ->
+                FileOutputStream(outputDir.resolve("ic_icon.png")).use { output ->
+                    input.copyTo(output)
+                }
             }
         }
+    } else {
+        doLast {
+            // ignore
+        }
+    }
+}
+
+afterEvaluate {
+    android.applicationVariants.forEach {
+        it.mergeResourcesProvider.get().dependsOn(tasks["fetchIcon"])
+        it.mergeAssetsProvider.get().dependsOn(tasks["fetchMMDB"])
     }
 }
 
