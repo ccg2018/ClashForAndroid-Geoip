@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="stub">
+
+    <application
+        android:allowBackup="false"
+        android:icon="${applicationIcon}"
+        android:label="@string/package_label"
+        android:theme="@android:style/Theme.NoDisplay">
+
+        <meta-data android:name="com.github.kr328.clash.GEOIP_FILE_NAME" android:value="Country.mmdb" />
+    </application>
+</manifest>
