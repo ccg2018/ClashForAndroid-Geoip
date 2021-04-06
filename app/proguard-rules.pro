@@ -21,3 +21,5 @@
 #-renamesourcefileattribute SourceFile
 
 -dontobfuscate
+
+-keep class stub.R
