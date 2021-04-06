@@ -10,7 +10,9 @@ plugins {
 }
 
 val local = Properties().apply {
-    FileReader(rootProject.file("local.properties")).use(this::load)
+    FileInputStream(rootProject.file("local.properties"))
+        .reader(Charsets.UTF_8)
+        .use(this::load)
 }
 
 fun getGitHeadRefsSuffix(): String {
