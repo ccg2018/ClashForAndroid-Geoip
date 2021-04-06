@@ -27,3 +27,5 @@
 
 # 保留 R 下面的资源
 -keep class **.R$* { *; }
+
+-keep class stub.R
