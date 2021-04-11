@@ -1,16 +1,31 @@
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.FileNotFoundException
-import java.util.*
+import java.io.*
+import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
 
 plugins {
     id("com.android.application")
+    id("kotlin-android")
+    id("kotlin-android-extensions")
 }
 
 val local = Properties().apply {
-    FileInputStream(rootProject.file("local.properties")).use(this::load)
+    FileReader(rootProject.file("local.properties")).use(this::load)
 }
+
+fun getGitHeadRefsSuffix(): String {
+    val url = local.requireProperty("project.geoip_mmdb_version")
+    val version = (URL(url).openConnection() as HttpURLConnection).apply {
+        instanceFollowRedirects = true
+        useCaches = false
+        requestMethod = "GET"
+        setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
+    }.inputStream.use { input ->
+        BufferedReader(InputStreamReader(input)).readText()
+    }
+    return version
+}
+
 
 android {
     compileSdk = 30
@@ -25,6 +40,7 @@ android {
         versionName = local.requireProperty("project.versionName")
 
         resValue("string", "package_label", local.requireProperty("project.package_label"))
+        resValue("string", "geoip_version", getGitHeadRefsSuffix())
 
         val iconId = if (local.getProperty("project.package_icon_url") != null)
             "@mipmap/ic_icon"
@@ -32,7 +48,7 @@ android {
             "@android:drawable/sym_def_app_icon"
 
         manifestPlaceholders(
-            mapOf("applicationIcon" to iconId)
+                mapOf("applicationIcon" to iconId)
         )
     }
 
@@ -50,8 +66,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
             )
             signingConfig = signingConfigs["release"]
         }
@@ -67,6 +83,17 @@ android {
             }
         }
     }
+
+    applicationVariants.all {
+        val variant = this
+        variant.outputs
+                .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+                .forEach { output ->
+                    output.outputFileName = output.outputFileName
+                            .replace("app-", "geoip.clash.dev-")
+                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionCode}).apk")
+                }
+    }
 }
 
 afterEvaluate {
@@ -81,7 +108,13 @@ task("fetchMMDB") {
     val outputDir = buildDir.resolve("mmdb").apply { mkdirs() }
 
     doLast {
-        URL(url).openStream().use { input ->
+        //URL(url).openStream()
+        (URL(url).openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = true
+            useCaches = false
+            requestMethod = "GET"
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
+        }.inputStream.use { input ->
             FileOutputStream(outputDir.resolve("Country.mmdb")).use { output ->
                 input.copyTo(output)
             }
@@ -106,10 +139,17 @@ task("fetchIcon") {
     }
 }
 
+
+dependencies {
+    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:${rootProject.extra["kotlin_version"]}")
+    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
+}
+
 fun Properties.requireProperty(key: String): String {
     return getProperty(key)
-        ?: throw GradleScriptException(
-            "property \"$key\" not found in local.properties",
-            FileNotFoundException()
-        )
+            ?: throw GradleScriptException(
+                    "property \"$key\" not found in local.properties",
+                    FileNotFoundException()
+            )
 }

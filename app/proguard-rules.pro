@@ -21,3 +21,9 @@
 #-renamesourcefileattribute SourceFile
 
 -dontobfuscate
+
+# 保留 R 下面的资源
+-keep public class * extends android.app.Activity
+
+# 保留 R 下面的资源
+-keep class **.R$* { *; }

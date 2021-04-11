@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="stub">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="stub">
 
     <application
         android:allowBackup="false"
@@ -7,6 +8,16 @@
         android:label="@string/package_label"
         android:theme="@android:style/Theme.NoDisplay">
 
-        <meta-data android:name="com.github.kr328.clash.GEOIP_FILE_NAME" android:value="Country.mmdb" />
+        <meta-data
+            android:name="com.github.kr328.clash.GEOIP_FILE_NAME"
+            android:value="Country.mmdb" />
+
+        <activity
+            android:name="stub.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:multiprocess="true"
+            android:theme="@style/ActivityTranslucent"
+            android:windowSoftInputMode="stateHidden|stateAlwaysHidden">
+        </activity>
     </application>
 </manifest>
