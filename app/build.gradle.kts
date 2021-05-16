@@ -1,6 +1,7 @@
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
@@ -13,19 +14,11 @@ val local = Properties().apply {
     FileReader(rootProject.file("local.properties")).use(this::load)
 }
 
-fun getGitHeadRefsSuffix(): String {
-    val url = local.requireProperty("project.geoip_mmdb_version")
-    val version = (URL(url).openConnection() as HttpURLConnection).apply {
-        instanceFollowRedirects = true
-        useCaches = false
-        requestMethod = "GET"
-        setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
-    }.inputStream.use { input ->
-        BufferedReader(InputStreamReader(input)).readText()
-    }
-    return version
+fun getTimeNow(): String {
+    val date = Date()
+    val format = SimpleDateFormat("yyyyMMdd")
+    return format.format(date)
 }
-
 
 android {
     compileSdk = 30
@@ -40,7 +33,7 @@ android {
         versionName = local.requireProperty("project.versionName")
 
         resValue("string", "package_label", local.requireProperty("project.package_label"))
-        resValue("string", "geoip_version", getGitHeadRefsSuffix())
+        resValue("string", "geoip_version", getTimeNow())
 
         val iconId = if (local.getProperty("project.package_icon_url") != null)
             "@mipmap/ic_icon"
@@ -90,8 +83,8 @@ android {
                 .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
-                            .replace("app-", "geoip.clash.dev-")
-                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionCode}).apk")
+                            .replace("app-", "geoip-cn")
+                            .replace(".apk", "-${getTimeNow()}(${variant.versionCode}).apk")
                 }
     }
 }
