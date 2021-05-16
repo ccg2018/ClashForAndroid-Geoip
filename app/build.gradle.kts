@@ -83,8 +83,8 @@ android {
                 .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
-                            .replace("app-", "geoip-cn")
-                            .replace(".apk", "-${getTimeNow()}(${variant.versionCode}).apk")
+                            .replace("app-", "geoip-cn-")
+                            .replace(".apk", "-${getTimeNow()}.apk")
                 }
     }
 }
