@@ -1,3 +1,4 @@
 # ClashForAndroid-Geoip
 
-Geoip from geolite.clash.dev
+Geoip from [Hackl0us - GeoIP2-CN](https://github.com/Hackl0us/GeoIP2-CN)
+
