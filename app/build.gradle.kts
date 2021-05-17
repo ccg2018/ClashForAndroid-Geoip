@@ -93,7 +93,6 @@ android {
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
                             .replace("app-", "geoip.clash.dev-")
-                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionCode}).apk")
                 }
     }
 }
