@@ -11,7 +11,9 @@ plugins {
 }
 
 val local = Properties().apply {
-    FileReader(rootProject.file("local.properties")).use(this::load)
+    FileInputStream(rootProject.file("local.properties"))
+        .reader(Charsets.UTF_8)
+        .use(this::load)
 }
 
 fun getTimeNow(): String {
@@ -84,7 +86,6 @@ android {
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
                             .replace("app-", "geoip-cn-")
-                            .replace(".apk", "-${getTimeNow()}.apk")
                 }
     }
 }
